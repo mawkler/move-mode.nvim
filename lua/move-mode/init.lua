@@ -4,15 +4,6 @@ local ts_move = require('nvim-treesitter.textobjects.move')
 
 local M = {}
 
-function M.termcodes(str)
-  return vim.api.nvim_replace_termcodes(str, true, true, true)
-end
-
-function M.feedkeys(keys, mode)
-  if mode == nil then mode = 'in' end
-  return vim.api.nvim_feedkeys(M.termcodes(keys), mode, true)
-end
-
 --- @param capture_group string
 --- @param direction string
 --- @return function
@@ -41,22 +32,21 @@ local function move_mode_commands(capture_group )
     ['k'] = move('previous', capture_group),
     [']'] = goto('next',     capture_group),
     ['['] = goto('previous', capture_group),
-    ['a'] = M.move_argument,
-    ['f'] = M.move_function,
+    ['a'] =  function() M.enter_move_mode('@parameter.inner') end,
+    ['f'] =  function() M.enter_move_mode('@function.outer') end,
   }
 end
 
-function M.move_argument()
-  libmodal.mode.enter('Move argument', move_mode_commands('@parameter.inner'))
-end
-
-function M.move_function()
-  libmodal.mode.enter('Move function', move_mode_commands('@function.outer'))
+--- @param capture_group string
+--- @param mode_display_name string?
+function M.enter_move_mode(capture_group, mode_display_name)
+  mode_display_name = mode_display_name or capture_group
+  libmodal.mode.enter(mode_display_name, move_mode_commands(capture_group))
 end
 
 function M.setup()
-  vim.keymap.set('n', 'gMa', M.move_argument)
-  vim.keymap.set('n', 'gMf', M.move_function)
+  vim.keymap.set('n', 'gMa', function() M.enter_move_mode('@parameter.inner') end)
+  vim.keymap.set('n', 'gMf', function() M.enter_move_mode('@function.outer') end)
 end
 
 return M
