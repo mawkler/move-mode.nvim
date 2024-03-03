@@ -1,8 +1,6 @@
 local libmodal = require 'libmodal'
 local ts_swap = require('nvim-treesitter.textobjects.swap')
-
--- TODO: move between textobject modes (argument/function, etc. by pressing
--- `a`/`f` in move-mode)
+local ts_move = require('nvim-treesitter.textobjects.move')
 
 local M = {}
 
@@ -15,39 +13,50 @@ function M.feedkeys(keys, mode)
   return vim.api.nvim_feedkeys(M.termcodes(keys), mode, true)
 end
 
---- @param query_group string
+--- @param capture_group string
 --- @param direction string
 --- @return function
-local function swap(direction, query_group)
+local function move(direction, capture_group)
   return function()
-    ts_swap['swap_' .. direction](query_group)
+    ts_swap['swap_' .. direction](capture_group)
   end
 end
 
---- @param query_group string
-local function move_mode_commands(query_group)
+--- @param capture_group string
+--- @param direction string
+--- @return function
+local function goto(direction, capture_group)
+  return function()
+    ts_move[string.format('goto_%s_start', direction)](capture_group)
+  end
+end
+
+--- @param capture_group string
+--- @return table
+local function move_mode_commands(capture_group )
   return {
-    l = swap('next', query_group),
-    h = swap('previous', query_group),
-    j = swap('next', query_group),
-    k = swap('previous', query_group),
-    J = function()
-      vim.api.nvim_win_set_cursor(0, { 1, 0 })
-    end,
+    ['l'] = move('next',     capture_group),
+    ['h'] = move('previous', capture_group),
+    ['j'] = move('next',     capture_group),
+    ['k'] = move('previous', capture_group),
+    [']'] = goto('next',     capture_group),
+    ['['] = goto('previous', capture_group),
+    ['a'] = M.move_argument,
+    ['f'] = M.move_function,
   }
 end
 
-local function move_argument()
+function M.move_argument()
   libmodal.mode.enter('Move argument', move_mode_commands('@parameter.inner'))
 end
 
-local function move_function()
+function M.move_function()
   libmodal.mode.enter('Move function', move_mode_commands('@function.outer'))
 end
 
 function M.setup()
-  vim.keymap.set('n', 'gMa', move_argument)
-  vim.keymap.set('n', 'gMf', move_function)
+  vim.keymap.set('n', 'gMa', M.move_argument)
+  vim.keymap.set('n', 'gMf', M.move_function)
 end
 
 return M
