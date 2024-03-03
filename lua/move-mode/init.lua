@@ -45,8 +45,9 @@ function M.enter_move_mode(capture_group, mode_display_name)
 end
 
 function M.setup()
-  vim.keymap.set('n', 'gMa', function() M.enter_move_mode('@parameter.inner') end)
-  vim.keymap.set('n', 'gMf', function() M.enter_move_mode('@function.outer') end)
+  vim.keymap.set('n', 'gma', function() M.enter_move_mode('@parameter.inner') end)
+  vim.keymap.set('n', 'gmf', function() M.enter_move_mode('@function.outer') end)
+  vim.keymap.set('n', 'gmc', function() M.enter_move_mode('@class.outer') end)
 end
 
 return M
