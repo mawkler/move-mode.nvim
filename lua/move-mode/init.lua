@@ -1,6 +1,7 @@
 local libmodal = require 'libmodal'
 local ts_swap = require('nvim-treesitter.textobjects.swap')
 local ts_move = require('nvim-treesitter.textobjects.move')
+local ts_shared = require('nvim-treesitter.textobjects.shared')
 local highlight = require('move-mode.highlight')
 
 local M = {}
@@ -46,7 +47,19 @@ local function move_mode_commands(capture_group )
 end
 
 --- @param capture_group string
+--- @return boolean
+local function cursor_is_on_textobject(capture_group)
+  local _, range, _ = ts_shared.textobject_at_point(capture_group)
+  return range ~= nil
+end
+
+--- @param capture_group string
 function M.enter_move_mode(capture_group)
+  -- TODO: perhaps have capture_group as a local variable instead of passing it around
+  if not cursor_is_on_textobject(capture_group) then
+    goto('next', capture_group)()
+  end
+
   highlight.highlight_current_node(capture_group)
 
   libmodal.mode.enter(options.mode_name, move_mode_commands(capture_group))
