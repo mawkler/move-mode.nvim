@@ -65,12 +65,11 @@ local function create_autocmds()
 end
 
 function M.setup()
-  -- TODO: handle v.count
   vim.keymap.set('n', 'gma', function() M.enter_move_mode('@parameter.inner') end)
   vim.keymap.set('n', 'gmf', function() M.enter_move_mode('@function.outer') end)
   vim.keymap.set('n', 'gmc', function() M.enter_move_mode('@class.outer') end)
 
-  vim.api.nvim_set_hl(0, highlight.hl_name_selection, { link = 'Visual' })
+  vim.api.nvim_set_hl(0, highlight.hl_selection_name, { link = 'Visual' })
 
   create_autocmds()
 end
