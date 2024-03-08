@@ -11,6 +11,7 @@ local M = {
   current_capture_group = nil
 }
 
+--- @class MoveModeOptions
 local options = {
   mode_name = 'm'
 }
@@ -103,7 +104,10 @@ local function create_autocmds()
   })
 end
 
-function M.setup()
+--- @param opts MoveModeOptions?
+function M.setup(opts)
+  options = vim.tbl_deep_extend('force', options, opts or {})
+
   vim.keymap.set('n', 'gma', function() M.enter_move_mode('@parameter.inner') end)
   vim.keymap.set('n', 'gmf', function() M.enter_move_mode('@function.outer') end)
   vim.keymap.set('n', 'gmc', function() M.enter_move_mode('@class.outer') end)
