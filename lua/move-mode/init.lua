@@ -28,7 +28,12 @@ end
 --- @return function
 local function goto(direction)
   return function()
-    ts_move[string.format('goto_%s_start', direction)](M.current_capture_group)
+    -- nvim-libmodal sets this variable since vim.v.count1 is immutable
+    local count = vim.g.mModeCount1 or 1
+    for _ = 1, count do
+      ts_move[string.format('goto_%s_start', direction)](M.current_capture_group)
+    end
+
     highlight.highlight_current_node()
   end
 end
