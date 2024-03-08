@@ -11,8 +11,8 @@ function M.clear_highlight(bufnr)
   vim.api.nvim_buf_clear_namespace(bufnr, hl_namespace, 0, -1)
 end
 
---- @param capture_group string
-function M.highlight_current_node(capture_group)
+function M.highlight_current_node()
+  local capture_group = require('move-mode').current_capture_group
   local bufnr, range, _ = ts_shared.textobject_at_point(capture_group)
   if not bufnr or not range then return end
 
