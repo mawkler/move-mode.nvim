@@ -42,15 +42,17 @@ end
 --- @return table
 local function move_mode_commands( )
   return {
-    ['l'] = move('next'),
-    ['h'] = move('previous'),
-    ['j'] = move('next'),
-    ['k'] = move('previous'),
-    [']'] = goto('next'),
-    ['['] = goto('previous'),
-    ['a'] = function() M.enter_move_mode('@parameter.inner') end,
-    ['f'] = function() M.enter_move_mode('@function.outer') end,
-    ['c'] = function() M.enter_move_mode('@class.outer') end,
+    ['l']  = move('next'),
+    ['h']  = move('previous'),
+    ['j']  = move('next'),
+    ['k']  = move('previous'),
+    [']']  = goto('next'),
+    ['[']  = goto('previous'),
+    ['a']  = function() M.enter_move_mode('@parameter.inner') end,
+    ['f']  = function() M.enter_move_mode('@function.outer') end,
+    ['c']  = function() M.enter_move_mode('@class.outer') end,
+    ['u']  = 'u',
+    [''] = '<c-r>',
   }
 end
 
