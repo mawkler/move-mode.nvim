@@ -108,8 +108,7 @@ function M.setup()
   vim.keymap.set('n', 'gmf', function() M.enter_move_mode('@function.outer') end)
   vim.keymap.set('n', 'gmc', function() M.enter_move_mode('@class.outer') end)
 
-  vim.api.nvim_set_hl(0, highlight.hl_selection_name, { link = 'Visual' })
-
+  highlight.create_highlight_group()
   create_autocmds()
 end
 

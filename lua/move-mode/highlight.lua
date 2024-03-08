@@ -1,10 +1,9 @@
 local ts_shared = require('nvim-treesitter.textobjects.shared')
 
-local hl_namespace = vim.api.nvim_create_namespace('move-mode')
+local M = {}
 
-local M = {
-  hl_selection_name = 'MoveModeSelection',
-}
+local hl_namespace = vim.api.nvim_create_namespace('move-mode')
+local hl_selection_name = 'MoveModeSelection'
 
 ---@param bufnr integer
 function M.clear_highlight(bufnr)
@@ -20,11 +19,12 @@ function M.highlight_current_node()
   local finish = { range[3], range[4] }
 
   M.clear_highlight(bufnr)
-  vim.highlight.range(bufnr, hl_namespace, M.hl_selection_name, start, finish)
+  vim.highlight.range(bufnr, hl_namespace, hl_selection_name, start, finish)
 end
 
 function M.create_highlight_group()
-  vim.api.nvim_set_hl(0, M.hl_selection_name, { link = 'Visual' })
+  local name = hl_selection_name
+  vim.api.nvim_set_hl(0, name, { link = 'Visual', default = true })
 end
 
 return M
