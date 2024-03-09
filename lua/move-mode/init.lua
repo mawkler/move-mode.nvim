@@ -13,7 +13,7 @@ local M = {
 
 --- @class MoveModeOptions
 local options = {
-  mode_name = 'm'
+  mode_name = 'm',
 }
 
 --- @param direction string
@@ -32,28 +32,56 @@ local function goto(direction)
     -- nvim-libmodal sets this variable since vim.v.count1 is immutable
     local count = vim.g.mModeCount1 or 1
     for _ = 1, count do
-      ts_move[string.format('goto_%s_start', direction)](M.current_capture_group)
+      local fn = string.format('goto_%s_start', direction)
+      ts_move[fn](M.current_capture_group)
     end
 
     highlight.highlight_current_node()
   end
 end
 
+--- @param capture_group string
+local function switch_mode(capture_group)
+  if M.current_capture_group ~= capture_group then
+    M.enter_move_mode(capture_group)
+  end
+end
+
+local function replace_termcodes(keys)
+  local new_keys = {}
+  for key, value in pairs(keys) do
+    local new_key = vim.api.nvim_replace_termcodes(key, true, true, true)
+    new_keys[new_key] = value
+  end
+
+  return new_keys
+end
+
+---@param command function
+local function do_then_highlight(command)
+  return function()
+    command()
+    highlight.highlight_current_node()
+  end
+end
+
 --- @return table
 local function move_mode_commands( )
-  return {
-    ['l']  = move('next'),
-    ['h']  = move('previous'),
-    ['j']  = move('next'),
-    ['k']  = move('previous'),
-    [']']  = goto('next'),
-    ['[']  = goto('previous'),
-    ['a']  = function() M.enter_move_mode('@parameter.inner') end,
-    ['f']  = function() M.enter_move_mode('@function.outer') end,
-    ['c']  = function() M.enter_move_mode('@class.outer') end,
-    ['u']  = 'u',
-    [''] = '<c-r>',
+  local mappings = {
+    ['l']     = move('next'),
+    ['h']     = move('previous'),
+    ['j']     = move('next'),
+    ['k']     = move('previous'),
+    [']']     = goto('next'),
+    ['[']     = goto('previous'),
+    ['a']     = function() M.enter_move_mode('@parameter.inner') end,
+    ['f']     = function() M.enter_move_mode('@function.outer') end,
+    ['c']     = function() M.enter_move_mode('@class.outer') end,
+    ['u']     = do_then_highlight(vim.cmd.undo),
+    ['<c-r>'] = do_then_highlight(vim.cmd.redo),
   }
+
+  return replace_termcodes(mappings)
 end
 
 --- @return boolean
