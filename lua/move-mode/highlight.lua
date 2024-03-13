@@ -18,7 +18,9 @@ function M.highlight_current_node()
   local start = { range[1], range[2] }
   local finish = { range[3], range[4] }
 
+  -- Clear any previous highlight
   M.clear_highlight(bufnr)
+
   vim.highlight.range(bufnr, hl_namespace, hl_selection_name, start, finish)
 end
 
