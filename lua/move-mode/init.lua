@@ -8,12 +8,15 @@ local highlight = require('move-mode.highlight')
 --- @field current_capture_group? string
 local M = {
   --- The current capture group if Move mode is active, otherwise `nil`
-  current_capture_group = nil
+  current_capture_group = nil,
 }
 
 --- @class MoveModeOptions
 local options = {
+  --- Mode name, see `:help mode()`
   mode_name = 'm',
+  --- Send notification when entering/exiting move mode
+  notify = true,
 }
 
 --- @param direction string
@@ -57,7 +60,7 @@ local function replace_termcodes(keys)
   return new_keys
 end
 
----@param command function
+--- @param command function
 local function do_then_highlight(command)
   return function()
     command()
@@ -90,8 +93,18 @@ local function cursor_is_on_textobject()
   return range ~= nil
 end
 
+--- @param message string
+--- @param level integer?
+local function notify(message, level)
+  if options.notify then
+    vim.notify(message, level)
+  end
+end
+
 --- @param capture_group string
 function M.enter_move_mode(capture_group)
+  notify('Move mode enabled')
+
   M.current_capture_group = capture_group
 
   if not cursor_is_on_textobject() then
@@ -105,6 +118,8 @@ end
 
 --- @param bufnr integer
 function M.exit_move_mode(bufnr)
+  notify('Move mode disabled')
+
   highlight.clear_highlight(bufnr)
   M.current_capture_group = nil
 end
