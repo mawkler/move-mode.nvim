@@ -35,13 +35,6 @@ local function goto(direction)
   end
 end
 
---- @param capture_group string
-local function switch_mode(capture_group)
-  if M.current_capture_group ~= capture_group then
-    M.enter_move_mode(capture_group)
-  end
-end
-
 ---@param keys table<string, any>
 ---@return table<string, any>
 local function replace_termcodes(keys)
@@ -64,7 +57,7 @@ end
 
 -- TODO: move to options.lua
 --- @return table
-local function move_mode_commands( )
+local function move_mode_commands()
   local mappings = {
     ['l']     = move('next'),
     ['h']     = move('previous'),
@@ -72,9 +65,9 @@ local function move_mode_commands( )
     ['k']     = move('previous'),
     [']']     = goto('next'),
     ['[']     = goto('previous'),
-    ['a']     = function() M.enter_move_mode('@parameter.inner') end,
-    ['f']     = function() M.enter_move_mode('@function.outer') end,
-    ['c']     = function() M.enter_move_mode('@class.outer') end,
+    ['a']     = function() M.switch_move_mode('@parameter.inner') end,
+    ['f']     = function() M.switch_move_mode('@function.outer') end,
+    ['c']     = function() M.switch_move_mode('@class.outer') end,
     ['u']     = do_then_highlight(vim.cmd.undo),
     ['<c-r>'] = do_then_highlight(vim.cmd.redo),
   }
@@ -141,6 +134,25 @@ function M.enter_move_mode(capture_group)
   create_mode_autocmds()
 
   libmodal.mode.enter(options.get().mode_name, move_mode_commands())
+end
+
+--- @param capture_group string
+function M.switch_move_mode(capture_group)
+  if M.current_capture_group == capture_group then
+    return
+  end
+
+  notify('Move mode switched to ' .. capture_group)
+
+  M.current_capture_group = capture_group
+
+  if not cursor_is_on_textobject() then
+    goto('next')()
+  end
+
+  highlight.highlight_current_node()
+
+  libmodal.mode.switch(options.get().mode_name, move_mode_commands())
 end
 
 --- @param opts MoveModeOptions?
