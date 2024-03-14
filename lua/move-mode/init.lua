@@ -111,25 +111,26 @@ end
 
 --- @param bufnr integer
 function M.exit_move_mode(bufnr)
-  -- TODO: doesn't actually exit, should call libmodal
-  notify('Move mode disabled')
+  vim.g[options.get().mode_name .. 'ModeExit' ] = true
+  M.current_capture_group = nil
 
   highlight.clear_highlight(bufnr)
   autocmds.clear_mode_autocmds()
-  M.current_capture_group = nil
   restore_cursorline()
+
+  notify('Move mode disabled')
 end
 
 local function create_mode_autocmds()
   autocmds.on_state_changed(highlight.highlight_current_node)
 
   autocmds.on_exiting_mode(function(autocmd)
-      local switched_to_mode = get_right_substring(autocmd.match)
-      -- If we switched to a mode that's not MoveMode
-      if switched_to_mode ~= options.get().mode_name then
-        M.exit_move_mode(autocmd.buf)
-      end
-    end)
+    local switched_to_mode = get_right_substring(autocmd.match)
+    -- If we switched to a mode that's not MoveMode
+    if switched_to_mode ~= options.get().mode_name then
+      M.exit_move_mode(autocmd.buf)
+    end
+  end)
 end
 
 --- @param capture_group string
