@@ -2,23 +2,16 @@ local libmodal = require 'libmodal'
 local ts_swap = require('nvim-treesitter.textobjects.swap')
 local ts_move = require('nvim-treesitter.textobjects.move')
 local ts_shared = require('nvim-treesitter.textobjects.shared')
-local highlight = require('move-mode.highlight')
 
-local augroup = vim.api.nvim_create_augroup('MoveMode', {})
+local highlight = require('move-mode.highlight')
+local autocmds = require('move-mode.autocmds')
+local options = require('move-mode.options')
 
 --- @class MoveMode
 --- @field current_capture_group? string
 local M = {
   --- The current capture group if Move mode is active, otherwise `nil`
   current_capture_group = nil,
-}
-
---- @class MoveModeOptions
-local options = {
-  --- Mode name, see `:help mode()`
-  mode_name = 'm',
-  --- Send notification when entering/exiting move mode
-  notify = true,
 }
 
 --- @param direction string
@@ -69,6 +62,7 @@ local function do_then_highlight(command)
   end
 end
 
+-- TODO: move to options.lua
 --- @return table
 local function move_mode_commands( )
   local mappings = {
@@ -94,6 +88,14 @@ local function cursor_is_on_textobject()
   return range ~= nil
 end
 
+--- @param message string
+--- @param level integer?
+local function notify(message, level)
+  if options.get().notify then
+    vim.notify(message, level)
+  end
+end
+
 --- @param split_on string
 --- @return string?
 local function get_right_substring(split_on)
@@ -103,31 +105,26 @@ local function get_right_substring(split_on)
   end
 end
 
-local function create_mode_autocmds()
-  vim.api.nvim_create_autocmd('CursorMoved', {
-    group = augroup,
-    callback = highlight.highlight_current_node,
-  })
+--- @param bufnr integer
+function M.exit_move_mode(bufnr)
+  -- TODO: doesn't actually exit, should call libmodal
+  notify('Move mode disabled')
 
-  vim.api.nvim_create_autocmd('ModeChanged', {
-    pattern = options.mode_name .. ':*',
-    group = augroup,
-    callback = function(autocmd)
-      local switched_to_mode = get_right_substring(autocmd.match)
-      -- If we switched to a mode that's not MoveMode
-      if switched_to_mode ~= options.mode_name then
-        M.exit_move_mode(autocmd.buf)
-      end
-    end,
-  })
+  highlight.clear_highlight(bufnr)
+  autocmds.clear_mode_autocmds()
+  M.current_capture_group = nil
 end
 
---- @param message string
---- @param level integer?
-local function notify(message, level)
-  if options.notify then
-    vim.notify(message, level)
-  end
+local function create_mode_autocmds()
+  autocmds.on_cursor_moved(highlight.highlight_current_node)
+
+  autocmds.on_exiting_mode(function(autocmd)
+      local switched_to_mode = get_right_substring(autocmd.match)
+      -- If we switched to a mode that's not MoveMode
+      if switched_to_mode ~= options.get().mode_name then
+        M.exit_move_mode(autocmd.buf)
+      end
+    end)
 end
 
 --- @param capture_group string
@@ -143,22 +140,12 @@ function M.enter_move_mode(capture_group)
   highlight.highlight_current_node()
   create_mode_autocmds()
 
-  libmodal.mode.enter(options.mode_name, move_mode_commands())
-end
-
---- @param bufnr integer
-function M.exit_move_mode(bufnr)
-  -- TODO: doesn't actually exit, should call libmodal
-  notify('Move mode disabled')
-
-  highlight.clear_highlight(bufnr)
-  vim.api.nvim_clear_autocmds({ group = augroup })
-  M.current_capture_group = nil
+  libmodal.mode.enter(options.get().mode_name, move_mode_commands())
 end
 
 --- @param opts MoveModeOptions?
 function M.setup(opts)
-  options = vim.tbl_deep_extend('force', options, opts or {})
+  options._set(opts)
 
   vim.keymap.set('n', 'gma', function() M.enter_move_mode('@parameter.inner') end)
   vim.keymap.set('n', 'gmf', function() M.enter_move_mode('@function.outer') end)
