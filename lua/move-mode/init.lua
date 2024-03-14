@@ -7,6 +7,9 @@ local highlight = require('move-mode.highlight')
 local autocmds = require('move-mode.autocmds')
 local options = require('move-mode.options')
 
+--- Used to restore cursorline when exiting move mode
+local cursorline_backup = nil
+
 --- @class MoveMode
 --- @field current_capture_group? string
 local M = {
@@ -98,6 +101,20 @@ local function get_right_substring(split_on)
   end
 end
 
+local function hide_cursorline()
+  if options.get().hide_cursorline then
+    cursorline_backup = vim.o.cursorline
+    vim.o.cursorline = false
+  end
+end
+
+local function restore_cursorline()
+  if options.get().hide_cursorline then
+    assert(cursorline_backup ~= nil, 'Cursorline should have been backed up')
+    vim.o.cursorline = cursorline_backup
+  end
+end
+
 --- @param bufnr integer
 function M.exit_move_mode(bufnr)
   -- TODO: doesn't actually exit, should call libmodal
@@ -106,6 +123,7 @@ function M.exit_move_mode(bufnr)
   highlight.clear_highlight(bufnr)
   autocmds.clear_mode_autocmds()
   M.current_capture_group = nil
+  restore_cursorline()
 end
 
 local function create_mode_autocmds()
@@ -123,6 +141,8 @@ end
 --- @param capture_group string
 function M.enter_move_mode(capture_group)
   notify('Move mode enabled')
+
+  hide_cursorline()
 
   M.current_capture_group = capture_group
 

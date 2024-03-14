@@ -6,6 +6,8 @@ local options = {
   mode_name = 'm',
   --- Send notification when entering/exiting move mode
   notify = true,
+  --- Hide cursorline in move mode
+  hide_cursorline = true,
 }
 
 --- @return MoveModeOptions
