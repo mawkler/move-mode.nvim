@@ -38,24 +38,18 @@ local function goto(direction)
   end
 end
 
----@param keys table<string, any>
----@return table<string, any>
-local function replace_termcodes(keys)
-  local new_keys = {}
-  for key, value in pairs(keys) do
-    local new_key = vim.api.nvim_replace_termcodes(key, true, true, true)
-    new_keys[new_key] = value
+--- Replace any termcode in every `keymap` and remove any parameter passed from
+--- libmodal to `fn`
+--- @param mappings table<string, function>
+--- @return table<string, function>
+local function clean_mappings(mappings)
+  local new_mappings = {}
+  for keymap, fn in pairs(mappings) do
+    local new_key = vim.api.nvim_replace_termcodes(keymap, true, true, true)
+    new_mappings[new_key] = function() fn() end
   end
 
-  return new_keys
-end
-
---- @param command function
-local function do_then_highlight(command)
-  return function()
-    command()
-    highlight.highlight_current_node()
-  end
+  return new_mappings
 end
 
 -- TODO: move to options.lua
@@ -71,11 +65,11 @@ local function move_mode_commands()
     ['a']     = function() M.switch_move_mode('@parameter.inner') end,
     ['f']     = function() M.switch_move_mode('@function.outer') end,
     ['c']     = function() M.switch_move_mode('@class.outer') end,
-    ['u']     = do_then_highlight(vim.cmd.undo),
-    ['<c-r>'] = do_then_highlight(vim.cmd.redo),
+    ['u']     = vim.cmd.undo,
+    ['<c-r>'] = vim.cmd.redo,
   }
 
-  return replace_termcodes(mappings)
+  return clean_mappings(mappings)
 end
 
 --- @return boolean
@@ -127,7 +121,7 @@ function M.exit_move_mode(bufnr)
 end
 
 local function create_mode_autocmds()
-  autocmds.on_cursor_moved(highlight.highlight_current_node)
+  autocmds.on_state_changed(highlight.highlight_current_node)
 
   autocmds.on_exiting_mode(function(autocmd)
       local switched_to_mode = get_right_substring(autocmd.match)

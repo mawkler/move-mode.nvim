@@ -5,8 +5,8 @@ local M = {}
 local augroup = vim.api.nvim_create_augroup('MoveMode', {})
 
 --- @param fn function
-function M.on_cursor_moved(fn)
-  vim.api.nvim_create_autocmd('CursorMoved', {
+function M.on_state_changed(fn)
+  vim.api.nvim_create_autocmd({ 'CursorMoved', 'TextChanged' }, {
     group = augroup,
     callback = fn,
   })
