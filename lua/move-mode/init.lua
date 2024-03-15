@@ -5,6 +5,7 @@ local ts_shared = require('nvim-treesitter.textobjects.shared')
 
 local highlight = require('move-mode.highlight')
 local autocmds = require('move-mode.autocmds')
+local cursorline = require('move-mode.cursorline')
 local options = require('move-mode.options')
 
 --- Used to restore cursorline when exiting move mode
@@ -95,20 +96,6 @@ local function get_right_substring(split_on)
   end
 end
 
-local function hide_cursorline()
-  if options.get().hide_cursorline then
-    cursorline_backup = vim.o.cursorline
-    vim.o.cursorline = false
-  end
-end
-
-local function restore_cursorline()
-  if options.get().hide_cursorline then
-    assert(cursorline_backup ~= nil, 'Cursorline should have been backed up')
-    vim.o.cursorline = cursorline_backup
-  end
-end
-
 --- @param bufnr integer
 function M.exit_move_mode(bufnr)
   vim.g[options.get().mode_name .. 'ModeExit' ] = true
@@ -116,7 +103,7 @@ function M.exit_move_mode(bufnr)
 
   highlight.clear_highlight(bufnr)
   autocmds.clear_mode_autocmds()
-  restore_cursorline()
+  cursorline.restore()
 
   notify('Move mode disabled')
 end
@@ -137,7 +124,7 @@ end
 function M.enter_move_mode(capture_group)
   notify('Move mode enabled')
 
-  hide_cursorline()
+  cursorline.hide()
 
   M.current_capture_group = capture_group
 
