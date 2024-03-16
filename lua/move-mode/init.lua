@@ -8,6 +8,8 @@ local autocmds = require('move-mode.autocmds')
 local cursorline = require('move-mode.cursorline')
 local options = require('move-mode.options')
 
+--- @alias Direction 'next' | 'previous'
+
 --- Used to restore cursorline when exiting move mode
 local cursorline_backup = nil
 
@@ -18,24 +20,18 @@ local M = {
   current_capture_group = nil,
 }
 
---- @param direction string
---- @return function
-local function move(direction)
-  return function()
-    ts_swap['swap_' .. direction](M.current_capture_group)
-  end
+--- @param direction Direction
+function M.move(direction)
+  ts_swap['swap_' .. direction](M.current_capture_group)
 end
 
---- @param direction string
---- @return function
-local function goto(direction)
-  return function()
-    -- nvim-libmodal sets this variable since vim.v.count1 is immutable
-    local count = vim.g.mModeCount1 or 1
-    for _ = 1, count do
-      local fn = string.format('goto_%s_start', direction)
-      ts_move[fn](M.current_capture_group)
-    end
+--- @param direction Direction
+function M.goto(direction)
+  -- nvim-libmodal sets this variable since vim.v.count1 is immutable
+  local count = vim.g.mModeCount1 or 1
+  for _ = 1, count do
+    local fn = string.format('goto_%s_start', direction)
+    ts_move[fn](M.current_capture_group)
   end
 end
 
@@ -57,12 +53,12 @@ end
 --- @return table
 local function move_mode_commands()
   local mappings = {
-    ['l']     = move('next'),
-    ['h']     = move('previous'),
-    ['j']     = move('next'),
-    ['k']     = move('previous'),
-    [']']     = goto('next'),
-    ['[']     = goto('previous'),
+    ['l']     = function() M.move('next') end,
+    ['h']     = function() M.move('previous') end,
+    ['j']     = function() M.move('next') end,
+    ['k']     = function() M.move('previous') end,
+    [']']     = function() M.goto('next') end,
+    ['[']     = function() M.goto('previous') end,
     ['a']     = function() M.switch_move_mode('@parameter.inner') end,
     ['f']     = function() M.switch_move_mode('@function.outer') end,
     ['c']     = function() M.switch_move_mode('@class.outer') end,
@@ -129,7 +125,7 @@ function M.enter_move_mode(capture_group)
   M.current_capture_group = capture_group
 
   if not cursor_is_on_textobject() then
-    goto('next')()
+    M.goto('next')
   end
 
   highlight.highlight_current_node()
@@ -149,7 +145,7 @@ function M.switch_move_mode(capture_group)
   M.current_capture_group = capture_group
 
   if not cursor_is_on_textobject() then
-    goto('next')()
+    M.goto('next')
   end
 
   highlight.highlight_current_node()
