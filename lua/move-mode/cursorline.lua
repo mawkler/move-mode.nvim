@@ -2,7 +2,7 @@ local options = require('move-mode.options')
 
 local M = {}
 
---- Used to restore cursorline when exiting move mode
+-- Used to restore cursorline when exiting move mode foo bar
 local cursorline_backup = nil
 
 function M.hide()

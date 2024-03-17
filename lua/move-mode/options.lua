@@ -1,40 +1,40 @@
 local M = {}
 
---- @param direction Direction
+---@param direction Direction
 local function move(direction)
   return function() require('move-mode').move(direction) end
 end
 
---- @param direction Direction
+---@param direction Direction
 local function goto(direction)
   return function() require('move-mode').goto(direction) end
 end
 
---- @param capture_group string
+---@param capture_group string
 local function switch_mode(capture_group)
     return function()
       require('move-mode').switch_mode(capture_group)
     end
 end
 
---- @param capture_group string
+---@param capture_group string
 local function enter(capture_group)
   return function() require('move-mode').enter_move_mode(capture_group) end
 end
 
---- @class MoveModeOptions
---- @field mode_keymaps table<string, function>
+---@class MoveModeOptions
+---@field mode_keymaps table<string, function>
 local options = {
-  --- Mode name, see `:help mode()`
+  ---Mode name, see `:help mode()`
   mode_name = 'm',
-  --- Send notification when entering/exiting move mode
+  ---Send notification when entering/exiting move mode
   notify = false,
-  --- Hide cursorline in move mode
+  ---Hide cursorline in move mode
   hide_cursorline = true,
-  --- Key map to trigger Move Mode (followed by text-object). Set it to `nil`
-  --- if you want to manually set your keymaps
+  ---Key map to trigger Move Mode (followed by text-object). Set it to `nil`
+  ---if you want to manually set your keymaps
   trigger_key_prefix = 'gm',
-  --- Keymaps inside Move Mode
+  ---Keymaps inside Move Mode
   mode_keymaps = {
     ['l']     = move('next'),
     ['h']     = move('previous'),
@@ -60,10 +60,10 @@ function M.create_default_trigger_keymaps()
   vim.keymap.set('n', prefix .. 'c', enter('@class.outer'))
 end
 
---- Replace any termcode in every keymap and remove any parameter passed from
---- libmodal to `fn`
---- @param mappings table<string, function>
---- @return table<string, function>
+---Replace any termcode in every keymap and remove any parameter passed from
+---libmodal to `fn`
+---@param mappings table<string, function>
+---@return table<string, function>
 local function clean_mappings(mappings)
   local new_mappings = {}
   for keymap, fn in pairs(mappings) do
@@ -74,14 +74,14 @@ local function clean_mappings(mappings)
   return new_mappings
 end
 
---- Get key mappings inside Move Mode
---- @return table
+---Get key mappings inside Move Mode
+---@return table
 function M.get_mode_keymaps()
   return clean_mappings(M.get().mode_keymaps)
 end
 
---- Get options
---- @return MoveModeOptions
+---Get options
+---@return MoveModeOptions
 function M.get()
   return options
 end

@@ -8,21 +8,21 @@ local autocmds = require('move-mode.autocmds')
 local cursorline = require('move-mode.cursorline')
 local options = require('move-mode.options')
 
---- @alias Direction 'next' | 'previous'
+---@alias Direction 'next' | 'previous'
 
---- @class MoveMode
---- @field current_capture_group? string
+---@class MoveMode
+---@field current_capture_group? string
 local M = {
-  --- The current capture group if Move mode is active, otherwise `nil`
+  ---The current capture group if Move mode is active, otherwise `nil`
   current_capture_group = nil,
 }
 
---- @param direction Direction
+---@param direction Direction
 function M.move(direction)
   ts_swap['swap_' .. direction](M.current_capture_group)
 end
 
---- @param direction Direction
+---@param direction Direction
 function M.goto(direction)
   -- nvim-libmodal sets this variable since vim.v.count1 is immutable
   local count = vim.g.mModeCount1 or 1
@@ -32,22 +32,22 @@ function M.goto(direction)
   end
 end
 
---- @return boolean
+---@return boolean
 local function cursor_is_on_textobject()
   local _, range, _ = ts_shared.textobject_at_point(M.current_capture_group)
   return range ~= nil
 end
 
---- @param message string
---- @param level integer?
+---@param message string
+---@param level integer?
 local function notify(message, level)
   if options.get().notify then
     vim.notify(message, level)
   end
 end
 
---- @param split_on string
---- @return string?
+---@param split_on string
+---@return string?
 local function get_right_substring(split_on)
   local position = string.find(split_on, ":")
   if position ~= nil then
@@ -55,7 +55,7 @@ local function get_right_substring(split_on)
   end
 end
 
---- @param bufnr integer
+---@param bufnr integer
 function M.exit_move_mode(bufnr)
   vim.g[options.get().mode_name .. 'ModeExit' ] = true
   M.current_capture_group = nil
@@ -79,7 +79,7 @@ local function create_mode_autocmds()
   end)
 end
 
---- @param capture_group string
+---@param capture_group string
 function M.enter_move_mode(capture_group)
   notify('Move mode enabled')
 
@@ -97,7 +97,7 @@ function M.enter_move_mode(capture_group)
   libmodal.mode.enter(options.get().mode_name, options.get_mode_keymaps())
 end
 
---- @param capture_group string
+---@param capture_group string
 function M.switch_mode(capture_group )
   if M.current_capture_group == capture_group then
     return
@@ -116,7 +116,7 @@ function M.switch_mode(capture_group )
   libmodal.mode.switch(options.get().mode_name, options.get_mode_keymaps())
 end
 
---- @param opts MoveModeOptions?
+---@param opts MoveModeOptions?
 function M.setup(opts)
   options._set(opts)
 

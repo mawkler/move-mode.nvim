@@ -4,7 +4,7 @@ local M = {}
 
 local augroup = vim.api.nvim_create_augroup('MoveMode', {})
 
---- @param fn function
+---@param fn function
 function M.on_state_changed(fn)
   vim.api.nvim_create_autocmd({ 'CursorMoved', 'TextChanged' }, {
     group = augroup,
@@ -12,6 +12,7 @@ function M.on_state_changed(fn)
   })
 end
 
+---@param fn function
 function M.on_exiting_mode(fn)
   vim.api.nvim_create_autocmd('ModeChanged', {
     pattern = options.get().mode_name .. ':*',
