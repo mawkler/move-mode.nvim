@@ -49,24 +49,9 @@ local function clean_mappings(mappings)
   return new_mappings
 end
 
--- TODO: move to options.lua
 --- @return table
-local function move_mode_commands()
-  local mappings = {
-    ['l']     = function() M.move('next') end,
-    ['h']     = function() M.move('previous') end,
-    ['j']     = function() M.move('next') end,
-    ['k']     = function() M.move('previous') end,
-    [']']     = function() M.goto('next') end,
-    ['[']     = function() M.goto('previous') end,
-    ['a']     = function() M.switch_move_mode('@parameter.inner') end,
-    ['f']     = function() M.switch_move_mode('@function.outer') end,
-    ['c']     = function() M.switch_move_mode('@class.outer') end,
-    ['u']     = vim.cmd.undo,
-    ['<c-r>'] = vim.cmd.redo,
-  }
-
-  return clean_mappings(mappings)
+local function get_mode_mappings()
+  return clean_mappings(options.get().mappings)
 end
 
 --- @return boolean
@@ -131,11 +116,11 @@ function M.enter_move_mode(capture_group)
   highlight.highlight_current_node()
   create_mode_autocmds()
 
-  libmodal.mode.enter(options.get().mode_name, move_mode_commands())
+  libmodal.mode.enter(options.get().mode_name, get_mode_mappings())
 end
 
 --- @param capture_group string
-function M.switch_move_mode(capture_group)
+function M.switch_mode(capture_group)
   if M.current_capture_group == capture_group then
     return
   end
@@ -150,7 +135,7 @@ function M.switch_move_mode(capture_group)
 
   highlight.highlight_current_node()
 
-  libmodal.mode.switch(options.get().mode_name, move_mode_commands())
+  libmodal.mode.switch(options.get().mode_name, get_mode_mappings())
 end
 
 --- @param opts MoveModeOptions?
