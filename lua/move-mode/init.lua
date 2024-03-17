@@ -3,6 +3,7 @@ local ts_swap = require('nvim-treesitter.textobjects.swap')
 local ts_move = require('nvim-treesitter.textobjects.move')
 local ts_shared = require('nvim-treesitter.textobjects.shared')
 
+local utils = require('move-mode.utils')
 local highlight = require('move-mode.highlight')
 local autocmds = require('move-mode.autocmds')
 local cursorline = require('move-mode.cursorline')
@@ -19,23 +20,23 @@ local M = {
 
 ---@param direction Direction
 function M.move(direction)
+  local message = 'move() must be called from Move Mode'
+  utils.assert(M.current_capture_group ~= nil, message)
+
   ts_swap['swap_' .. direction](M.current_capture_group)
 end
 
 ---@param direction Direction
 function M.goto(direction)
+  local message = 'goto() must be called from Move Mode'
+  utils.assert(M.current_capture_group ~= nil, message)
+
   -- nvim-libmodal sets this variable since vim.v.count1 is immutable
   local count = vim.g.mModeCount1 or 1
   for _ = 1, count do
     local fn = string.format('goto_%s_start', direction)
     ts_move[fn](M.current_capture_group)
   end
-end
-
----@return boolean
-local function cursor_is_on_textobject()
-  local _, range, _ = ts_shared.textobject_at_point(M.current_capture_group)
-  return range ~= nil
 end
 
 ---@param message string
@@ -56,6 +57,12 @@ function M.exit_move_mode(bufnr)
   cursorline.restore()
 
   notify('Move mode disabled')
+end
+
+---@return boolean
+local function cursor_is_on_textobject()
+  local _, range, _ = ts_shared.textobject_at_point(M.current_capture_group)
+  return range ~= nil
 end
 
 ---@param capture_group string
