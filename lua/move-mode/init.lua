@@ -32,25 +32,6 @@ function M.goto(direction)
   end
 end
 
---- Replace any termcode in every `keymap` and remove any parameter passed from
---- libmodal to `fn`
---- @param mappings table<string, function>
---- @return table<string, function>
-local function clean_mappings(mappings)
-  local new_mappings = {}
-  for keymap, fn in pairs(mappings) do
-    local new_key = vim.api.nvim_replace_termcodes(keymap, true, true, true)
-    new_mappings[new_key] = function() fn() end
-  end
-
-  return new_mappings
-end
-
---- @return table
-local function get_mode_mappings()
-  return clean_mappings(options.get().mode_keymaps)
-end
-
 --- @return boolean
 local function cursor_is_on_textobject()
   local _, range, _ = ts_shared.textobject_at_point(M.current_capture_group)
@@ -113,7 +94,7 @@ function M.enter_move_mode(capture_group)
   highlight.highlight_current_node()
   create_mode_autocmds()
 
-  libmodal.mode.enter(options.get().mode_name, get_mode_mappings())
+  libmodal.mode.enter(options.get().mode_name, options.get_mode_keymaps())
 end
 
 --- @param capture_group string
@@ -132,7 +113,7 @@ function M.switch_mode(capture_group )
 
   highlight.highlight_current_node()
 
-  libmodal.mode.switch(options.get().mode_name, get_mode_mappings())
+  libmodal.mode.switch(options.get().mode_name, options.get_mode_keymaps())
 end
 
 --- @param opts MoveModeOptions?

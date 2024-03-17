@@ -60,6 +60,27 @@ function M.create_default_trigger_keymaps()
   vim.keymap.set('n', prefix .. 'c', enter('@class.outer'))
 end
 
+--- Replace any termcode in every keymap and remove any parameter passed from
+--- libmodal to `fn`
+--- @param mappings table<string, function>
+--- @return table<string, function>
+local function clean_mappings(mappings)
+  local new_mappings = {}
+  for keymap, fn in pairs(mappings) do
+    local new_key = vim.api.nvim_replace_termcodes(keymap, true, true, true)
+    new_mappings[new_key] = function() fn() end
+  end
+
+  return new_mappings
+end
+
+--- Get key mappings inside Move Mode
+--- @return table
+function M.get_mode_keymaps()
+  return clean_mappings(M.get().mode_keymaps)
+end
+
+--- Get options
 --- @return MoveModeOptions
 function M.get()
   return options
