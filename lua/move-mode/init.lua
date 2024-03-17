@@ -46,15 +46,6 @@ local function notify(message, level)
   end
 end
 
----@param split_on string
----@return string?
-local function get_right_substring(split_on)
-  local position = string.find(split_on, ":")
-  if position ~= nil then
-    return string.sub(split_on, position + 1)
-  end
-end
-
 ---@param bufnr integer
 function M.exit_move_mode(bufnr)
   vim.g[options.get().mode_name .. 'ModeExit' ] = true
@@ -65,18 +56,6 @@ function M.exit_move_mode(bufnr)
   cursorline.restore()
 
   notify('Move mode disabled')
-end
-
-local function create_mode_autocmds()
-  autocmds.on_state_changed(highlight.highlight_current_node)
-
-  autocmds.on_exiting_mode(function(autocmd)
-    local switched_to_mode = get_right_substring(autocmd.match)
-    -- If we switched to a mode that's not MoveMode
-    if switched_to_mode ~= options.get().mode_name then
-      M.exit_move_mode(autocmd.buf)
-    end
-  end)
 end
 
 ---@param capture_group string
@@ -92,8 +71,7 @@ function M.enter_move_mode(capture_group)
   end
 
   highlight.highlight_current_node()
-  create_mode_autocmds()
-
+  autocmds.create_mode_autocmds()
   libmodal.mode.enter(options.get().mode_name, options.get_mode_keymaps())
 end
 
@@ -112,16 +90,13 @@ function M.switch_mode(capture_group )
   end
 
   highlight.highlight_current_node()
-
   libmodal.mode.switch(options.get().mode_name, options.get_mode_keymaps())
 end
 
 ---@param opts MoveModeOptions?
 function M.setup(opts)
   options._set(opts)
-
   options.create_default_trigger_keymaps()
-
   highlight.create_highlight_group()
 end
 
