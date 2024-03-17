@@ -17,17 +17,25 @@ local function switch_mode(capture_group)
     end
 end
 
+--- @param capture_group string
+local function enter(capture_group)
+  return function() require('move-mode').enter_move_mode(capture_group) end
+end
+
 --- @class MoveModeOptions
---- @field mappings table<string, function>
+--- @field mode_keymaps table<string, function>
 local options = {
   --- Mode name, see `:help mode()`
   mode_name = 'm',
   --- Send notification when entering/exiting move mode
-  notify = true,
+  notify = false,
   --- Hide cursorline in move mode
   hide_cursorline = true,
-  --- Keymaps
-  mappings = {
+  --- Key map to trigger Move Mode (followed by text-object). Set it to `nil`
+  --- if you want to manually set your keymaps
+  trigger_key_prefix = 'gm',
+  --- Keymaps inside Move Mode
+  mode_keymaps = {
     ['l']     = move('next'),
     ['h']     = move('previous'),
     ['j']     = move('next'),
@@ -41,6 +49,16 @@ local options = {
     ['<c-r>'] = vim.cmd.redo,
   }
 }
+
+function M.create_default_trigger_keymaps()
+  local prefix = M.get().trigger_key_prefix
+
+  if prefix == nil then return end
+
+  vim.keymap.set('n', prefix .. 'a', enter('@parameter.inner'))
+  vim.keymap.set('n', prefix .. 'f', enter('@function.outer'))
+  vim.keymap.set('n', prefix .. 'c', enter('@class.outer'))
+end
 
 --- @return MoveModeOptions
 function M.get()

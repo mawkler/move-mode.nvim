@@ -5,7 +5,6 @@ local M = {}
 --- Used to restore cursorline when exiting move mode
 local cursorline_backup = nil
 
-
 function M.hide()
   if options.get().hide_cursorline then
     cursorline_backup = vim.o.cursorline

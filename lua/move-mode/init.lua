@@ -10,9 +10,6 @@ local options = require('move-mode.options')
 
 --- @alias Direction 'next' | 'previous'
 
---- Used to restore cursorline when exiting move mode
-local cursorline_backup = nil
-
 --- @class MoveMode
 --- @field current_capture_group? string
 local M = {
@@ -51,7 +48,7 @@ end
 
 --- @return table
 local function get_mode_mappings()
-  return clean_mappings(options.get().mappings)
+  return clean_mappings(options.get().mode_keymaps)
 end
 
 --- @return boolean
@@ -120,7 +117,7 @@ function M.enter_move_mode(capture_group)
 end
 
 --- @param capture_group string
-function M.switch_mode(capture_group)
+function M.switch_mode(capture_group )
   if M.current_capture_group == capture_group then
     return
   end
@@ -142,9 +139,7 @@ end
 function M.setup(opts)
   options._set(opts)
 
-  vim.keymap.set('n', 'gma', function() M.enter_move_mode('@parameter.inner') end)
-  vim.keymap.set('n', 'gmf', function() M.enter_move_mode('@function.outer') end)
-  vim.keymap.set('n', 'gmc', function() M.enter_move_mode('@class.outer') end)
+  options.create_default_trigger_keymaps()
 
   highlight.create_highlight_group()
 end
