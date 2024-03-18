@@ -19,7 +19,7 @@ end
 
 ---@param capture_group string
 local function enter(capture_group)
-  return function() require('move-mode').enter_move_mode(capture_group) end
+  return function() require('move-mode').enter_mode(capture_group) end
 end
 
 ---@class MoveModeOptions
@@ -34,7 +34,7 @@ local options = {
   ---Key map to trigger Move Mode (followed by text-object). Set it to `nil`
   ---if you want to manually set your keymaps
   trigger_key_prefix = 'gm',
-  ---Keymaps inside Move Mode
+  ---Keymaps inside Move Mode, set keymap value to `nil` to disable
   mode_keymaps = {
     ['l']     = move('next'),
     ['h']     = move('previous'),

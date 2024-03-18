@@ -48,7 +48,7 @@ local function notify(message, level)
 end
 
 ---@param bufnr integer
-function M.exit_move_mode(bufnr)
+function M.exit_mode(bufnr)
   vim.g[options.get().mode_name .. 'ModeExit' ] = true
   M.current_capture_group = nil
 
@@ -66,7 +66,7 @@ local function cursor_is_on_textobject()
 end
 
 ---@param capture_group string
-function M.enter_move_mode(capture_group)
+function M.enter_mode(capture_group)
   notify('Move mode enabled')
 
   cursorline.hide()

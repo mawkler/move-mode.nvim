@@ -38,7 +38,7 @@ function M.create_mode_autocmds()
     local switched_to_mode = get_right_substring(autocmd.match)
     -- If we switched to a mode that's not MoveMode
     if switched_to_mode ~= options.get().mode_name then
-      require('move-mode').exit_move_mode(autocmd.buf)
+      require('move-mode').exit_mode(autocmd.buf)
     end
   end)
 end
