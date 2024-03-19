@@ -1,4 +1,4 @@
-local libmodal = require 'libmodal'
+local libmodal = require('libmodal')
 local ts_swap = require('nvim-treesitter.textobjects.swap')
 local ts_move = require('nvim-treesitter.textobjects.move')
 local ts_shared = require('nvim-treesitter.textobjects.shared')
@@ -20,7 +20,7 @@ local M = {
 
 ---@param direction Direction
 function M.move(direction)
-  local message = 'move() must be called from Move Mode'
+  local message = 'move() must be called from move mode'
   utils.assert(M.current_capture_group ~= nil, message)
 
   ts_swap['swap_' .. direction](M.current_capture_group)
@@ -28,7 +28,7 @@ end
 
 ---@param direction Direction
 function M.goto(direction)
-  local message = 'goto() must be called from Move Mode'
+  local message = 'goto() must be called from move mode'
   utils.assert(M.current_capture_group ~= nil, message)
 
   -- nvim-libmodal sets this variable since vim.v.count1 is immutable
@@ -82,8 +82,11 @@ function M.enter_mode(capture_group)
   libmodal.mode.enter(options.get().mode_name, options.get_mode_keymaps())
 end
 
+---Switch move mode to another `capture_group`. For a list of available capture
+---groups, see
+---https://github.com/nvim-treesitter/nvim-treesitter/blob/master/CONTRIBUTING.md#highlights
 ---@param capture_group string
-function M.switch_mode(capture_group )
+function M.switch_mode(capture_group)
   if M.current_capture_group == capture_group then
     return
   end

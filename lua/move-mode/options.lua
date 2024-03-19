@@ -31,10 +31,10 @@ local options = {
   notify = false,
   ---Hide cursorline in move mode
   hide_cursorline = true,
-  ---Key map to trigger Move Mode (followed by text-object). Set it to `nil`
-  ---if you want to manually set your keymaps
+  ---Key map prefix to trigger move mode. Set it to `false` if you want to
+  ---manually set your keymaps
   trigger_key_prefix = 'gm',
-  ---Keymaps inside Move Mode, set keymap value to `nil` to disable
+  ---Keymaps inside move mode, set keymap value to `nil` to disable
   mode_keymaps = {
     ['l']     = move('next'),
     ['h']     = move('previous'),
@@ -53,7 +53,7 @@ local options = {
 function M.create_default_trigger_keymaps()
   local prefix = M.get().trigger_key_prefix
 
-  if prefix == nil then return end
+  if prefix == false then return end
 
   vim.keymap.set('n', prefix .. 'a', enter('@parameter.inner'))
   vim.keymap.set('n', prefix .. 'f', enter('@function.outer'))
@@ -74,7 +74,7 @@ local function clean_mappings(mappings)
   return new_mappings
 end
 
----Get key mappings inside Move Mode
+---Get key mappings inside move mode
 ---@return table
 function M.get_mode_keymaps()
   return clean_mappings(M.get().mode_keymaps)
