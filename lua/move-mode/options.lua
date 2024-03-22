@@ -1,16 +1,19 @@
 local M = {}
 
 ---@param direction Direction
+---@return function
 local function move(direction)
   return function() require('move-mode').move(direction) end
 end
 
 ---@param direction Direction
+---@return function
 local function goto(direction)
   return function() require('move-mode').goto(direction) end
 end
 
 ---@param capture_group string
+---@return function
 local function switch_mode(capture_group)
     return function()
       require('move-mode').switch_mode(capture_group)
@@ -26,7 +29,7 @@ end
 ---@field mode_keymaps table<string, function>
 local options = {
   ---Mode name, see `:help mode()`
-  mode_name = 'm',
+  mode_name = 'MOVE',
   ---Send notification when entering/exiting move mode
   notify = false,
   ---Hide cursorline in move mode

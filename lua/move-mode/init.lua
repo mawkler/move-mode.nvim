@@ -18,6 +18,14 @@ local M = {
   current_capture_group = nil,
 }
 
+---Add capture group prefix to current mode name
+---@param capture_group string
+---@return string
+local function format_mode_name(capture_group)
+  local text_object = capture_group:match("@(%w+)")
+  return string.format('%s (%s)', options.get().mode_name, text_object)
+end
+
 ---@param direction Direction
 function M.move(direction)
   local message = 'move() must be called from move mode'
@@ -79,7 +87,9 @@ function M.enter_mode(capture_group)
 
   highlight.highlight_current_node()
   autocmds.create_mode_autocmds()
-  libmodal.mode.enter(options.get().mode_name, options.get_mode_keymaps())
+
+  local mode_name = format_mode_name(capture_group)
+  libmodal.mode.enter(mode_name, options.get_mode_keymaps())
 end
 
 ---Switch move mode to another `capture_group`. For a list of available capture
@@ -100,7 +110,16 @@ function M.switch_mode(capture_group)
   end
 
   highlight.highlight_current_node()
-  libmodal.mode.switch(options.get().mode_name, options.get_mode_keymaps())
+
+  local mode_name = format_mode_name(capture_group)
+  -- TODO: are we using switch incorrectly? switch() returns a function
+  return libmodal.mode.switch(mode_name, options.get_mode_keymaps())
+end
+
+---@return string
+function M.get_current_mode()
+  local mode_name = vim.g.libmodalActiveModeName
+  return mode_name ~= nil and mode_name or vim.api.nvim_get_mode().mode
 end
 
 ---@param opts MoveModeOptions?
