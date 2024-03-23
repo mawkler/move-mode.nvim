@@ -112,8 +112,7 @@ function M.switch_mode(capture_group)
   highlight.highlight_current_node()
 
   local mode_name = format_mode_name(capture_group)
-  -- TODO: are we using switch incorrectly? switch() returns a function
-  return libmodal.mode.switch(mode_name, options.get_mode_keymaps())
+  return libmodal.mode.map.switch(mode_name, options.get_mode_keymaps())
 end
 
 ---@return string

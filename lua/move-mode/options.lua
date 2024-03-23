@@ -15,14 +15,19 @@ end
 ---@param capture_group string
 ---@return function
 local function switch_mode(capture_group)
-    return function()
-      require('move-mode').switch_mode(capture_group)
-    end
+  return function() require('move-mode').switch_mode(capture_group) end
 end
 
 ---@param capture_group string
+---@return function
 local function enter(capture_group)
   return function() require('move-mode').enter_mode(capture_group) end
+end
+
+---@param run function
+---@return unknown
+function M.fn(run)
+  return function() run() end
 end
 
 ---@class MoveModeOptions
@@ -45,11 +50,17 @@ local options = {
     ['k']     = move('previous'),
     [']']     = goto('next'),
     ['[']     = goto('previous'),
-    ['a']     = switch_mode('@parameter.inner'),
-    ['f']     = switch_mode('@function.outer'),
-    ['c']     = switch_mode('@class.outer'),
-    ['u']     = vim.cmd.undo,
-    ['<c-r>'] = vim.cmd.redo,
+    ['a']     = function(mode)
+      require('move-mode').switch_mode('@parameter.inner')(mode)
+    end,
+    ['f']     = function(mode)
+      require('move-mode').switch_mode('@function.outer')(mode)
+    end,
+    ['c']     = function(mode)
+      require('move-mode').switch_mode('@class.outer')(mode)
+    end,
+    ['u']     = M.fn(vim.cmd.undo),
+    ['<c-r>'] = M.fn(vim.cmd.redo),
   }
 }
 
@@ -61,6 +72,8 @@ function M.create_default_trigger_keymaps()
   vim.keymap.set('n', prefix .. 'a', enter('@parameter.inner'))
   vim.keymap.set('n', prefix .. 'f', enter('@function.outer'))
   vim.keymap.set('n', prefix .. 'c', enter('@class.outer'))
+  vim.keymap.set('n', prefix .. 'v', enter('@variable'))
+  vim.keymap.set('n', prefix .. 't', enter('@type'))
 end
 
 ---Replace any termcode in every keymap and remove any parameter passed from
@@ -80,7 +93,8 @@ end
 ---Get key mappings inside move mode
 ---@return table
 function M.get_mode_keymaps()
-  return clean_mappings(M.get().mode_keymaps)
+  -- return clean_mappings(M.get().mode_keymaps)
+  return M.get().mode_keymaps
 end
 
 ---Get options
